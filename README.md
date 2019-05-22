@@ -1,15 +1,10 @@
 
     
----
-title: "Final_project_final_edition"
-author: "Daren Ansher"
-date: "5/21/2019"
-output:
-  pdf_document: default
-  html_document: default
----
+Daren Ansher's CMSC320 Final Project
+
 
 A Little Context:
+
 Sports tickets tend to be sold in three ways: single game tickets, multi-game plans, and season tickets. 
 Since teams would rather sell more tickets at once, the best seating is generally reserved for those willing 
 to purchase season tickets. Once a team has sold as many season tickets as they can, the leftover seats are 
@@ -95,7 +90,7 @@ those characters with the input year. For more information about Regular Express
 see here: https://r4ds.had.co.nz/strings.html)
 
 
-```{r Write some functions}
+```r Write some functions
 scrape_html <- function(url) {
   read_html(url) %>% 
   html_node("#my-teams-table") %>% 
