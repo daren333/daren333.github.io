@@ -38,7 +38,7 @@ we'd like to see if we can scrape some key statistics to predict which teams wil
 game.
 
 
-```{r setup, include=FALSE}
+```
 knitr::opts_chunk$set(echo = TRUE)
 library(rvest)
 library(tidyverse)
@@ -58,7 +58,7 @@ row elements so we'll use tr to extract all table rows. More info on CSS Selecto
 https://www.w3.org/TR/CSS2/selector.html.
 
 
-```{r Pull ESPN Data}
+```r
 off_url <- "http://www.espn.com/nba/statistics/team/_/stat/offense-per-game/year/2015/seasontype/2"
 d_url <- "http://www.espn.com/nba/statistics/team/_/stat/defense-per-game/year/2015/seasontype/2"
 misc_url <- "http://www.espn.com/nba/statistics/team/_/stat/miscellaneous-per-game/year/2015/seasontype/2"
