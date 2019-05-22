@@ -86,15 +86,18 @@ misc_url <- "http://www.espn.com/nba/statistics/team/_/stat/miscellaneous-per-ga
 The HTML is a bit messy, so the pages will require a little cleanup. However it appears that each of the three pages are set
 up the same. Therefore, we should be able to scrape the statistics from the other two pages using the exact same commands. 
 Further, we notice that the URL for the statistics pages of other years is exactly the same except for replacinig "2015" with 
-whatever year we want the statistics for. Given how similar these tasks are, we can make things a little easier by writing a few 
+whatever year we want the statistics for. Given how similar these tasks are, we can make things a little easier by writing 
+a few 
 functions!
 
 We'll create two functions. The first will take a url, scrape the page for statistical information, and return the information 
 we want. The second will take in a year, use the gsub function to replace the part of the URLs that say "20xx" with whatever 
 year is provded, and then call the first function, inputting the modified URLs, to scrape that year's pages. The gsub function 
 will use Regular Expressions to search for a given pattern and, wherever it finds that pattern, replace it with a different 
-pattern. In this case, the pattern we are searching for is "20\\d{2}" aka the exact number "20" followed by exactly two additional 
-digits ("\\d{2}"). Whenever that group of characters is found, it will replace those characters with the input year. For more 
+pattern. In this case, the pattern we are searching for is "20\\d{2}" aka the exact number "20" followed by exactly 
+two additional 
+digits ("\\d{2}"). Whenever that group of characters is found, it will replace those characters with the input year. 
+For more 
 information about Regular Expressions and text manipulation, see here: https://r4ds.had.co.nz/strings.html)
 
 
