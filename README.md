@@ -39,12 +39,14 @@ game.
 
 
 ```
+
 knitr::opts_chunk$set(echo = TRUE)
 library(rvest)
 library(tidyverse)
 library(stringr)
 library(ggplot2)
 library(randomForest)
+
 ```
 
 
@@ -58,7 +60,8 @@ row elements so we'll use tr to extract all table rows. More info on CSS Selecto
 https://www.w3.org/TR/CSS2/selector.html.
 
 
-```r
+```
+
 off_url <- "http://www.espn.com/nba/statistics/team/_/stat/offense-per-game/year/2015/seasontype/2"
 d_url <- "http://www.espn.com/nba/statistics/team/_/stat/defense-per-game/year/2015/seasontype/2"
 misc_url <- "http://www.espn.com/nba/statistics/team/_/stat/miscellaneous-per-game/year/2015/seasontype/2"
@@ -69,6 +72,7 @@ misc_url <- "http://www.espn.com/nba/statistics/team/_/stat/miscellaneous-per-ga
   html_nodes("tr") %>% 
   html_text()
   html_data
+  
 ```
 
 
@@ -90,7 +94,8 @@ those characters with the input year. For more information about Regular Express
 see here: https://r4ds.had.co.nz/strings.html)
 
 
-```r Write some functions
+```
+
 scrape_html <- function(url) {
   read_html(url) %>% 
   html_node("#my-teams-table") %>% 
@@ -112,6 +117,7 @@ get_year_data <- function(year) {
   misc_html_data <- scrape_html(misc_url)
   misc_stats <- get_misc_stats(misc_html_data) 
 }
+
 ```
 
 Before we jump to the next part we'll have a brief interlude to talk about some nifty regular expressions. Square brackets 
@@ -135,7 +141,8 @@ pass the resulting string into str_extract() again to discard the numbers we swe
 rid of any spaces, and na.omit() to get rid of any rows with NA. Both of these final operations will be useful to us 
 later on. 
 
-```{r Separate Team Names}
+```
+
 extract_team_names <- function(html_data) {
   html_data %>% 
     str_extract("\\d?[A-Z][a-z]+\\s*[A-Za-z]*\\d") %>% 
@@ -143,6 +150,7 @@ extract_team_names <- function(html_data) {
     gsub(pattern = "\\s", replacement = c("")) %>% 
     na.omit()
 }
+
 ```
 
 Now that we have our html data, and a way to pull the team names, its time to do the heavy lifting. We'll write three more 
@@ -168,7 +176,8 @@ Next we'll use the slice() function to get rid of the rows that have attribute h
 we'll add the team names back to the statistics dataframe with the mutate() function and then use select to move team
 name to the front so that the team name is the first attribute in the table.
 
-```{r MORE FUNCTIONS!!!}
+```
+
 get_offensive_stats <- function(html_data) {
   team_names_data <-  extract_team_names(html_data)
   off_stat_data <- html_data %>%
@@ -206,9 +215,6 @@ get_defensive_stats <- function(html_data) {
 }
     
 adjust_accordingly <- function(off_stat_data) {
-  # off_stat_tab <- data.frame(PPG = "", FGM = "", FGA = "", FGP = "", 
-  #          TPM = "", TPA = "",TPP = "", FTM = "", FTA = "", FTP = "",
-  #          PPS = "", AFG = "")
   rowlen <- nchar(off_stat_data)
   off_stat_frame <- data.frame(str = off_stat_data, len = rowlen)
   off_stat_frame$flag_tot <- ifelse(rowlen == 48, TRUE, FALSE)
@@ -273,6 +279,7 @@ adjust_accordingly <- function(off_stat_data) {
   }
   off_stat_tab
 }
+
 ```
 
 
@@ -284,7 +291,8 @@ to combine the three tables into one mega table. Full join will find the entitie
 and concatenate all of those entities' attributes together. 
 For more detail on joins, see here: http://www.hcbravo.org/IntroDataSci/bookdown-notes/two-table-operations.html
 
-```{r Put it all together}
+```
+
 get_year_data <- function(year) {
   off_url <- off_url %>%  gsub(pattern = "20\\d{2}", replacement = year)
   d_url <- d_url %>%  gsub(pattern = "20\\d{2}", replacement = year)
@@ -302,6 +310,7 @@ get_year_data <- function(year) {
 }
 stats_tab <- get_year_data(2017)
 stats_tab
+
 ```
 
 Now that we've gathered all these statistics, lets briefly summarize what each of these things actually mean so we can know 
@@ -346,8 +355,10 @@ the team's opponents. These are used to measure the quality of a team's defense.
 Okay! Let's use our functions to pull together all of last year's data and select
 the attributes we discussed.
 
-```{r Get 2018 data}
+```
+
 stats_2018 <- get_year_data(2018)
+
 ```
 
 
@@ -361,7 +372,8 @@ select() to grab the date of the game, which teams played, and each team's score
 mutate() to create a boolean column reflecting whether or not the absolute value of difference
 in the two team's scores is less than ten.
 
-```{r get boxscore data}
+```
+
 boxscores <- "~/Documents/UMD/courses/spring2019/cmsc320/Projects/final_project/nba-enhanced-stats/2012-18_teamBoxScore.csv"
 boxscore_tab <- read_csv(boxscores)
 boxscore_tab_2018 <- boxscore_tab %>% 
@@ -370,12 +382,14 @@ boxscore_tab_2018 <- boxscore_tab %>%
   mutate(diff = abs(as.numeric(teamPTS) - as.numeric(opptPTS)), close_game = 
     ifelse((abs(as.numeric(teamPTS) - as.numeric(opptPTS))) < 10, TRUE, FALSE))
 boxscore_tab_2018
+
 ```
 
 Now that we've obtained all of our data, let's start looking at it! We'll start with a boxplot to 
 see if any teams tend to have a lower point differential on average.
 
-```{r visualizations}
+```
+
 boxscore_tab_2018 %>% 
   ggplot(aes(x=teamAbbr, y=diff)) + 
     geom_boxplot() +
@@ -384,12 +398,14 @@ boxscore_tab_2018 %>%
          y = "Differential") +
     theme(plot.title=element_text(hjust = .5), 
           legend.title = element_blank())
+          
 ```
 
 Since the other dataset uses team abbreviations instead of team names, let's add the appropriate
 abbreviation for each team so we can refer to the same team in both tables.
 
-```{r Add Team Abbreviations }
+```
+
 stats_2018 <- stats_2018 %>% 
   mutate(teamAbbr = c("GS", "HOU", "NO", "TOR", "CLE", "DEN", 
                       "PHI", "MIN", "LAC", "CHA", "LAL", "OKC", 
@@ -399,26 +415,31 @@ stats_2018 <- stats_2018 %>%
 stats_2018 <- stats_2018 %>% 
   select(Team_Name, teamAbbr, everything())
 stats_2018
+
 ```
 
 
 Then, let's use group_by() to combine the boxscore stats for each team and then summarize() to calculate the 
 average point differential per team. Next we'll use a join to combine our scraped data with the average 
 differentials.
-```{r }
+
+```
+
 team_diffs_tab <- boxscore_tab_2018 %>% 
   group_by(teamAbbr) %>% 
   summarize(avg_diff = mean(diff), num_close_games = sum(ifelse(close_game == TRUE, 1, 0)))
 team_diffs_tab
 diffstats_tab <- full_join(stats_2018, team_diffs_tab, by="teamAbbr")
 diffstats_tab
+
 ```
 
 
 lets make a few plots considering different stats and how they relate to average differential
 
 
-```{r }
+```
+
 diffstats_tab %>% 
   ggplot(aes(x=PPG, y=num_close_games)) + 
     geom_point()+
@@ -427,11 +448,13 @@ diffstats_tab %>%
            y = "Number Close Games") +
     theme(plot.title=element_text(hjust = .5), 
           legend.title = element_blank())
+          
 ```
 
 
 
-```{r }
+```
+
 diffstats_tab %>% 
   ggplot(aes(x=Opp_PPG, y=num_close_games)) + 
     geom_point()+
@@ -440,10 +463,12 @@ diffstats_tab %>%
            y = "Number Close Games") +
     theme(plot.title=element_text(hjust = .5), 
           legend.title = element_blank())
+          
 ```
 
 
-```{r }
+```
+
 diffstats_tab %>% 
   ggplot(aes(x=TPP, y=num_close_games)) + 
     geom_point() +
@@ -452,10 +477,12 @@ diffstats_tab %>%
            y = "Number Close Games") +
     theme(plot.title=element_text(hjust = .5), 
           legend.title = element_blank())
+          
 ```
 
 
-```{r }
+```
+
 diffstats_tab %>% 
   ggplot(aes(x=TPA, y=num_close_games)) + 
     geom_point() +
@@ -464,8 +491,11 @@ diffstats_tab %>%
            y = "Number Close Games") +
     theme(plot.title=element_text(hjust = .5), 
           legend.title = element_blank())
+          
 ```
-```{r }
+
+```
+
 diffstats_tab %>% 
   ggplot(aes(x=FTA, y=num_close_games)) + 
     geom_point() +
@@ -474,6 +504,7 @@ diffstats_tab %>%
            y = "Number Close Games") +
     theme(plot.title=element_text(hjust = .5), 
           legend.title = element_blank())
+          
 ```
 
 While most plots show nothing of interest correlation, the last two show a small amount of promise.
@@ -482,10 +513,12 @@ significant effect on the number of close games and see if we can reject the nul
 have no effect. We'll fit these to a linear regression model and find out if there is validity to our 
 hypothesis
 
-```{r Linear Regression}
+```
+
 model <- lm(num_close_games~TPA*FTA, data = diffstats_tab) %>% 
           broom::tidy() 
 model
+
 ```
 
 Unfortunately, it appears we are unable to reject the null hypothesis. Although conditioning 
