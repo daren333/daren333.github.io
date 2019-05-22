@@ -90,15 +90,14 @@ whatever year we want the statistics for. Given how similar these tasks are, we 
 a few 
 functions!
 
-We'll create two functions. The first will take a url, scrape the page for statistical information, and return the information 
-we want. The second will take in a year, use the gsub function to replace the part of the URLs that say "20xx" with whatever 
-year is provded, and then call the first function, inputting the modified URLs, to scrape that year's pages. The gsub function 
-will use Regular Expressions to search for a given pattern and, wherever it finds that pattern, replace it with a different 
-pattern. In this case, the pattern we are searching for is "20\\d{2}" aka the exact number "20" followed by exactly 
-two additional 
-digits ("\\d{2}"). Whenever that group of characters is found, it will replace those characters with the input year. 
-For more 
-information about Regular Expressions and text manipulation, see here: https://r4ds.had.co.nz/strings.html)
+We'll create two functions. The first will take a url, scrape the page for statistical information, and return the 
+information we want. The second will take in a year, use the gsub function to replace the part of the URLs that say 
+"20xx" with whatever year is provded, and then call the first function, inputting the modified URLs, to scrape that year's
+pages. The gsub function will use Regular Expressions to search for a given pattern and, wherever it finds that pattern, 
+replace it with a different pattern. In this case, the pattern we are searching for is "20\\d{2}" aka the exact number 
+"20" followed by exactly two additional digits ("\\d{2}"). Whenever that group of characters is found, it will replace 
+those characters with the input year. For more information about Regular Expressions and text manipulation, 
+see here: https://r4ds.had.co.nz/strings.html)
 
 
 ```{r Write some functions}
@@ -127,26 +126,27 @@ get_year_data <- function(year) {
 }
 ```
 
-Before we jump to the next part we'll have a brief interlude to talk about some nifty regular expressions. Square brackets can be 
-thought of as match any of these characters. So [AB] will match the following strings: "A", "B", "AB", "AC", "BC", "ABC". It will 
-not match the string "CDE". \\d will match any digit 0-9 and \\s will match any whitespace character (tab, space, etc.). Each of 
-the regular expressions mentioned will match exactly once. The function str_extract() takes a regular expression and extracts any 
-corresponding strings matching that pattern. So using str_extract() with the pattern "[AB]" and the string "ABC" will return just 
-"A". Using the same on the string "CBC" will return just "B". 
+Before we jump to the next part we'll have a brief interlude to talk about some nifty regular expressions. Square brackets 
+can be thought of as match any of these characters. So [AB] will match the following strings: "A", "B", "AB", "AC", "BC", 
+"ABC". It will not match the string "CDE". \\d will match any digit 0-9 and \\s will match any whitespace character (tab, 
+space, etc.). Each of the regular expressions mentioned will match exactly once. The function str_extract() takes a regular 
+expression and extracts any corresponding strings matching that pattern. So using str_extract() with the pattern "[AB]" and 
+the string "ABC" will return just "A". Using the same on the string "CBC" will return just "B". 
 
-We can use numeric operators as well. Appending an expression with ? equates to match whenever that expression ocurrs zero or one 
-times. "*" means match zero or more times, and "+" means match one or more times. Appending with {x,y} where x and y are numbers, 
-means match any amount between x and y times. Examples can be found in the following paragraph, and additional reading about regular 
-expressions can be found here: https://r4ds.had.co.nz/strings.html
+We can use numeric operators as well. Appending an expression with ? equates to match whenever that expression ocurrs zero 
+or one times. "*" means match zero or more times, and "+" means match one or more times. Appending with {x,y} where x and y 
+are numbers, means match any amount between x and y times. Examples can be found in the following paragraph, and additional
+reading about regular expressions can be found here: https://r4ds.had.co.nz/strings.html
 
-Since team names haven't changed since 2014, and since they are in the same place (albeit in different orders) for all three webpages,
-we can write a functiion that will take in the html_data for a partcular page and extract the team names. We'll use str_extract() 
-to pass in another regular expression and rerturn any strings that match that pattern. Since we notice that most of the team names 
-are preceded by a one or two digit number, we'll extract any strings that have one or zero digits (\\d?), followed by any capital 
-letter ([A-Z]), followed by one or more lowercase letters ([a-z]+), followed by zero or more spaces (\\s\*), followed by zero or 
-more upperr or lowercase letters ([A-Za-z]\*), followed by a digit. Then we'll pass the resulting string into str_extract() again 
-to discard the numbers we swept up. Finally, we'll use gsub() to get rid of any spaces, and na.omit() to get rid of any rows with 
-NA. Both of these final operations will be useful to us later on. 
+Since team names haven't changed since 2014, and since they are in the same place (albeit in different orders) for all three 
+webpages, we can write a functiion that will take in the html_data for a partcular page and extract the team names. We'll use
+str_extract() to pass in another regular expression and rerturn any strings that match that pattern. Since we notice that 
+most of the team names are preceded by a one or two digit number, we'll extract any strings that have one or zero digits 
+(\\d?), followed by any capital letter ([A-Z]), followed by one or more lowercase letters ([a-z]+), followed by zero or 
+more spaces (\\s\*), followed by zero or more upperr or lowercase letters ([A-Za-z]\*), followed by a digit. Then we'll 
+pass the resulting string into str_extract() again to discard the numbers we swept up. Finally, we'll use gsub() to get 
+rid of any spaces, and na.omit() to get rid of any rows with NA. Both of these final operations will be useful to us 
+later on. 
 
 ```{r Separate Team Names}
 
@@ -160,28 +160,28 @@ extract_team_names <- function(html_data) {
 
 ```
 
-Now that we have our html data, and a way to pull the team names, its time to do the heavy lifting. We'll write three more functions;
-one function will be for offensive statistics, one for defensive, and one for misc. They will all have similar methodology, but with 
-slight variations due to the dataset. The general idea is that we'll pass in the html data for the page with the corresponding stats, 
-use the extract_team_names() function we wrote and save it for later. Next we'll use str_remove_all to remove all non-numeric values 
-from the data. Once the raw data is obtained, we'll separate 
+Now that we have our html data, and a way to pull the team names, its time to do the heavy lifting. We'll write three more 
+functions; one function will be for offensive statistics, one for defensive, and one for misc. They will all have similar 
+methodology, but with slight variations due to the dataset. The general idea is that we'll pass in the html data for the 
+page with the corresponding stats, use the extract_team_names() function we wrote and save it for later. Next we'll use 
+str_remove_all to remove all non-numeric values from the data.
 
-We'll then create a dataframe with each team being an entity and each statistical category being an attribute. Because there is no 
-clear delimiter in the data, we'll need to treat it as a giant string and create substrings based on the length of the corresponding 
-statistics. Because PTS can be over or under 100, and because 3PM can be over or under 10, there is no way to separate each row at the 
-same places. We have to get a little hacky here but bear with me. 
+We'll then create a dataframe with each team being an entity and each statistical category being an attribute. Because there
+is no clear delimiter in the data, we'll need to treat it as a giant string and create substrings based on the length of the 
+corresponding statistics. Because PTS can be over or under 100, and because 3PM can be over or under 10, there is no way to 
+separate each row at the same places. We have to get a little hacky here but bear with me. 
 
-We'll have to set up a function that will consider the four possibilities and adjust the cutoffs accordingly. We'll helpfully name 
-this function adjust_accordingly. Each row can have a total of 47-49 characters depending on these two values. If PTS >= 100 and 
-3pm >= 10, there will be 49 characters. If PTS < 100 and 3PM >= 10 or if PTS >= 100 and 3PM <= 10, we'll have 48 characters, and 
-if both are less, we'll have 47. So we'll create a flag that will be true if the line consists of exactly 48 characters and false 
-otherwise. Next, we notice that if PTS >= 100, it will have to start with a 1. So we can make another flag that will be true if 
-the first number is a 1 and false otherwise. Combining the two flags, we can determine where each of the cutoffs will be for every 
-row!
+We'll have to set up a function that will consider the four possibilities and adjust the cutoffs accordingly. We'll 
+helpfully name this function adjust_accordingly. Each row can have a total of 47-49 characters depending on these two 
+values. If PTS >= 100 and 3pm >= 10, there will be 49 characters. If PTS < 100 and 3PM >= 10 or if PTS >= 100 and 3PM <= 10,
+we'll have 48 characters, and if both are less, we'll have 47. So we'll create a flag that will be true if the line consists
+of exactly 48 characters and false otherwise. Next, we notice that if PTS >= 100, it will have to start with a 1. So we can 
+make another flag that will be true if the first number is a 1 and false otherwise. Combining the two flags, we can
+determine where each of the cutoffs will be for every row!
 
-Next we'll use the slice() function to get rid of the rows that have attribute headers instead of statistics. Finally, we'll add 
-the team names back to the statistics dataframe with the mutate() function and then use select to move team name to the front so 
-that the team name is the first attribute in the table.
+Next we'll use the slice() function to get rid of the rows that have attribute headers instead of statistics. Finally, 
+we'll add the team names back to the statistics dataframe with the mutate() function and then use select to move team
+name to the front so that the team name is the first attribute in the table.
 
 ```{r MORE FUNCTIONS!!!}
 
@@ -300,10 +300,11 @@ adjust_accordingly <- function(off_stat_data) {
 
 Finally, we'll put all of the functions we've written into one giant function that takes in a year and outputs the combined 
 statistics for that year. We'll start by using gsub() exactly as we did before to get the desired urls. We'll then call our 
-html_scrape() function with each url to get the appropriate HTML info, and pipe that into the corresponding get_stats() function 
-to clean everything up and put it into a dataframe. Finally, we'll call full_join() on the Team_Name attribute to combine the 
-three tables into one mega table. Full join will find the entities in each table with matching team names, and concatenate all 
-of those entities' attributes together. For more detail on joins, see here: http://www.hcbravo.org/IntroDataSci/bookdown-notes/two-table-operations.html
+html_scrape() function with each url to get the appropriate HTML info, and pipe that into the corresponding get_stats() 
+function to clean everything up and put it into a dataframe. Finally, we'll call full_join() on the Team_Name attribute 
+to combine the three tables into one mega table. Full join will find the entities in each table with matching team names, 
+and concatenate all of those entities' attributes together. 
+For more detail on joins, see here: http://www.hcbravo.org/IntroDataSci/bookdown-notes/two-table-operations.html
 
 ```{r Put it all together}
 
@@ -333,38 +334,40 @@ Now that we've gathered all these statistics, lets briefly summarize what each o
 which stats to choose.
 
 It is worth noting two things before diving in. First, all of these stats are calculated as per game averages. So PPG, or 
-points per game, is the total number of points the team scored over the season divided by 82, the number of games in a season.
-Second, you'll notice that each attribute in the offensive stats table has an identical attribute, prepended by Opp_, in the 
-defensive stats table. The first measures how good the team is at offensive things while the second measures how good that 
-team is defensively. So if PPG is the amount of points a team scores in an average game, Opp_PPG is the amount of points that 
-same team allows their opponents to score in an average game.
+points per game, is the total number of points the team scored over the season divided by 82, the number of games in a 
+season. Second, you'll notice that each attribute in the offensive stats table has an identical attribute, prepended by 
+Opp_, in the defensive stats table. The first measures how good the team is at offensive things while the second measures
+how good that team is defensively. So if PPG is the amount of points a team scores in an average game, Opp_PPG is the
+amount of points that same team allows their opponents to score in an average game.
 
 To the specifics! 
 
-In basketball, a field goal is any basket made during the course of normal play (so basically anything other than a free throw, 
-which we'll explain soon). FGM, FGA, and FGP is field goals made, field goals attempted, and field goal percent. FGM is the number 
-of baskets made during normal play, FGA is the number of times the team shot a basket, regardless of whether or not the shot is made, 
-and FGP is FGM/FGA.
+In basketball, a field goal is any basket made during the course of normal play (so basically anything other than a free 
+throw, which we'll explain soon). FGM, FGA, and FGP is field goals made, field goals attempted, and field goal percent. 
+FGM is the number of baskets made during normal play, FGA is the number of times the team shot a basket, regardless of
+whether or not the shot is made, and FGP is FGM/FGA.
 
-While most baskets count for two points, if the shot is taken 24 feet from the hoop or further, the team is awarded three points 
-instead of two. TPM, TPA, and TPP, is three pointers made, three pointers attempted, and three point percent and it is exactly the 
-same as field goals, but only for shots taken from the requisite distance. 
+While most baskets count for two points, if the shot is taken 24 feet from the hoop or further, the team is awarded three
+points instead of two. TPM, TPA, and TPP, is three pointers made, three pointers attempted, and three point percent and it
+is exactly the same as field goals, but only for shots taken from the requisite distance. 
 
-When an offensive player is contacted illegally while shooting a basket, we call this a foul and the player is awarded two or three 
-free throws depending on if the foul was committed against a player while that player was taking a shot from a distance less than or
-more than 24 feet from the hoop (there is quite a bit of additional nuance to fouling in basketball that I won't get into. If you are
-interested, this site gives a lovely overview of the types and terminology: https://www.breakthroughbasketball.com/basics/basics.html).
-When a free throw is awarded, the player will be allowed to shoot two or three uncontested shots from the free throw line, a designated
-location 15 feet from the center of the basket. Each free throw is worth one point. FTM, FTA, and FTP is exactly like field goals and 
-three pointers, but only for these special shots.
+When an offensive player is contacted illegally while shooting a basket, we call this a foul and the player is awarded two
+or three free throws depending on if the foul was committed against a player while that player was taking a shot from a 
+distance less than or more than 24 feet from the hoop (there is quite a bit of additional nuance to fouling in basketball 
+that I won't get into. If you are interested, this site gives a lovely overview of the types and terminology:
+https://www.breakthroughbasketball.com/basics/basics.html). When a free throw is awarded, the player will be allowed to 
+shoot two or three uncontested shots from the free throw line, a designated location 15 feet from the center of the basket.
+Each free throw is worth one point. FTM, FTA, and FTP is exactly like field goals and  three pointers, but only for these 
+special shots.
 
-PPS and AFG are points per shot and adjusted field goal percent respectively. They try to measure efficiency by calculating the how many
-points are scored per possession instead of per game. They're not very useful for our purposes so I won't go into any additional detail.
-However if you'd like to know more about them, you can start here: http://pages.stat.wisc.edu/~wardrop/articles/3point_html.
+PPS and AFG are points per shot and adjusted field goal percent respectively. They try to measure efficiency by calculating 
+the how many points are scored per possession instead of per game. They're not very useful for our purposes so I won't go 
+into any additional detail. However if you'd like to know more about them, you can start 
+here: http://pages.stat.wisc.edu/~wardrop/articles/3point_html.
 
-As noted above, each of the previously discussed statistics have an identical stat, prepended with Opp_. These are the exact same stats, 
-but instead of calculating the per game averages of the team, they calculate the per game averages for the team's opponents. These are 
-used to measure the quality of a team's defense.
+As noted above, each of the previously discussed statistics have an identical stat, prepended with Opp_. These are the
+exact same stats, but instead of calculating the per game averages of the team, they calculate the per game averages for 
+the team's opponents. These are used to measure the quality of a team's defense.
 
 Okay! Let's use our functions to pull together all of last year's data and select
 the attributes we discussed.
@@ -376,7 +379,8 @@ stats_2018 <- get_year_data(2018)
 ```
 
 
-Now that we have our scraped data, let's pull another dataset in from https://www.kaggle.com/pablote/nba-enhanced-stats/downloads/nba-enhanced-stats.zip/27 
+Now that we have our scraped data, let's pull another dataset in from
+https://www.kaggle.com/pablote/nba-enhanced-stats/downloads/nba-enhanced-stats.zip/27 
 to view boxscores for the same time periods. For our purposes, we'll define an exciting
 game as a game where the losing team score is within ten points of the winning team's score.
 
@@ -392,7 +396,8 @@ boxscore_tab <- read_csv(boxscores)
 boxscore_tab_2018 <- boxscore_tab %>% 
   filter(gmDate >= "2017-10-30") %>% 
   select(gmDate, teamAbbr, opptAbbr, teamPTS, opptPTS) %>%
-  mutate(diff = abs(as.numeric(teamPTS) - as.numeric(opptPTS)), close_game = ifelse((abs(as.numeric(teamPTS) - as.numeric(opptPTS))) < 10, TRUE, FALSE))
+  mutate(diff = abs(as.numeric(teamPTS) - as.numeric(opptPTS)), close_game = 
+    ifelse((abs(as.numeric(teamPTS) - as.numeric(opptPTS))) < 10, TRUE, FALSE))
 
 boxscore_tab_2018
 
